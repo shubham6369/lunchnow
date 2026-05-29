@@ -79,9 +79,34 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
         setError(null);
         setLoading(false);
         setGoogleLoading(false);
+        
+        // Clear recaptcha verifier when closed
+        if ((window as any).recaptchaVerifier) {
+          try {
+            (window as any).recaptchaVerifier.clear();
+            (window as any).recaptchaVerifier = null;
+          } catch (e) {
+            console.error("Error clearing recaptcha", e);
+          }
+        }
       }, 300);
     }
   }, [isOpen]);
+
+  // Centralized redirect on successful sign-in once profile is loaded
+  useEffect(() => {
+    if (step === "success" && profile) {
+      const timer = setTimeout(() => {
+        onClose();
+        if (profile.role === "vendor") {
+          router.push("/vendor");
+        } else if (profile.role === "admin") {
+          router.push("/admin");
+        }
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [step, profile, onClose, router]);
 
   // ── Google Sign-in ──────────────────────────────────────
   const handleGoogleSignIn = async (role: "customer" | "vendor" = "customer") => {
@@ -90,18 +115,6 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
     try {
       await signInWithGoogle(role);
       setStep("success");
-      
-      // Handle redirection after a short delay
-      setTimeout(() => {
-        onClose();
-        // Use a small delay to ensure profile has synced if it was just created/updated
-        const role = profile?.role;
-        if (role === 'vendor') {
-          router.push('/vendor');
-        } else if (role === 'admin') {
-          router.push('/admin');
-        }
-      }, 1800);
     } catch (err: any) {
       console.error(err);
       setError(err.code === "auth/popup-closed-by-user" 
@@ -128,6 +141,9 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
     setLoading(true);
     setError(null);
     try {
+      // Store intended role for new user registration
+      sessionStorage.setItem('intended_role', intendedRole);
+      
       setupRecaptcha();
       const formatted = phoneNumber.startsWith("+") ? phoneNumber : `+91${phoneNumber}`;
       const result = await signInWithPhoneNumber(auth, formatted, (window as any).recaptchaVerifier);
@@ -149,16 +165,6 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
     try {
       await confirmationResult.confirm(otp);
       setStep("success");
-      
-      setTimeout(() => {
-        onClose();
-        const role = profile?.role;
-        if (role === 'vendor') {
-          router.push('/vendor');
-        } else if (role === 'admin') {
-          router.push('/admin');
-        }
-      }, 2000);
     } catch (err: any) {
       setError("Invalid OTP code. Please check and try again.");
     } finally {
@@ -178,15 +184,9 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
         await signInWithEmail(email, password);
       }
       setStep("success");
-      setTimeout(() => {
-        onClose();
-        const role = profile?.role;
-        if (role === 'vendor') {
-          router.push('/vendor');
-        } else if (role === 'admin') {
-          router.push('/admin');
-        }
-      }, 2000);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || "Authentication failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -358,6 +358,36 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
                     <p className="text-muted text-sm mb-8">We'll send you a 6-digit OTP.</p>
 
                     <form onSubmit={handleSendOtp} className="space-y-6">
+                      <div className="space-y-2 mb-4">
+                        <label className="text-xs font-bold text-muted uppercase tracking-wider ml-1">I am a</label>
+                        <div className="flex gap-4">
+                          <button
+                            type="button"
+                            onClick={() => setIntendedRole("customer")}
+                            className={cn(
+                              "flex-1 py-3 rounded-xl border font-bold text-xs transition-all",
+                              intendedRole === "customer" 
+                                ? "bg-primary/10 border-primary text-primary" 
+                                : "bg-white/5 border-white/10 text-muted hover:bg-white/10 hover:text-white"
+                            )}
+                          >
+                            Customer
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setIntendedRole("vendor")}
+                            className={cn(
+                              "flex-1 py-3 rounded-xl border font-bold text-xs transition-all",
+                              intendedRole === "vendor" 
+                                ? "bg-primary/10 border-primary text-primary" 
+                                : "bg-white/5 border-white/10 text-muted hover:bg-white/10 hover:text-white"
+                            )}
+                          >
+                            Vendor
+                          </button>
+                        </div>
+                      </div>
+
                       <div className="space-y-2">
                         <label className="text-xs font-bold text-muted uppercase tracking-wider ml-1">Phone Number</label>
                         <div className="relative">

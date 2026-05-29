@@ -15,7 +15,8 @@ import {
   ArrowLeft,
   Truck,
   ShieldCheck,
-  Smartphone
+  Smartphone,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createOrder } from "@/lib/firestore";
@@ -23,7 +24,7 @@ import Link from "next/link";
 
 export default function CheckoutPage() {
   const { items, cartTotal, clearCart } = useCart();
-  const { user, profile } = useAuth();
+  const { user, profile, updateProfile } = useAuth();
   const router = useRouter();
   
   const [step, setStep] = useState(1); // 1: Cart, 2: Address, 3: Payment
@@ -31,6 +32,23 @@ export default function CheckoutPage() {
   const [orderComplete, setOrderComplete] = useState(false);
   const [orderId, setOrderId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"UPI" | "COD">("UPI");
+
+  // Form Details States
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+
+  // Prefill details from profile/auth
+  React.useEffect(() => {
+    if (profile) {
+      setCustomerName(prev => prev || profile.displayName || user?.displayName || "");
+      setCustomerPhone(prev => prev || profile.phoneNumber || user?.phoneNumber || "");
+      setDeliveryAddress(prev => prev || profile.address || "");
+    } else if (user) {
+      setCustomerName(prev => prev || user.displayName || "");
+      setCustomerPhone(prev => prev || user.phoneNumber || "");
+    }
+  }, [user, profile]);
 
   const deliveryFee = 25;
   const platformFee = 5;
@@ -45,11 +63,21 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
     
+    // Sync details back to profile if changed or missing
+    if (updateProfile) {
+      updateProfile({
+        displayName: customerName,
+        phoneNumber: customerPhone,
+        address: deliveryAddress
+      }).catch(err => console.error("Failed to sync checkout profile:", err));
+    }
+    
     try {
       if (paymentMethod === "COD") {
         const newOrder = {
           userId: user.uid,
-          userName: user.displayName || "Customer",
+          userName: customerName || user.displayName || "Customer",
+          phoneNumber: customerPhone || user.phoneNumber || "",
           vendorId: items[0].vendorId,
           vendorName: items[0].vendorName,
           items: items,
@@ -60,7 +88,7 @@ export default function CheckoutPage() {
           platformFee,
           status: "pending",
           paymentStatus: "pending",
-          address: profile?.address || "Home - Default Address",
+          address: deliveryAddress,
           paymentMethod: "COD",
         };
 
@@ -114,7 +142,8 @@ export default function CheckoutPage() {
             // 4. Finalize order in Firestore
             const newOrder = {
               userId: user.uid,
-              userName: user.displayName || "Customer",
+              userName: customerName || user.displayName || "Customer",
+              phoneNumber: customerPhone || user.phoneNumber || "",
               vendorId: items[0].vendorId,
               vendorName: items[0].vendorName,
               items: items,
@@ -128,7 +157,7 @@ export default function CheckoutPage() {
               razorpayOrderId: razorpayOrder.id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,
-              address: profile?.address || "Home - Default Address",
+              address: deliveryAddress,
               paymentMethod: "UPI",
             };
 
@@ -142,9 +171,9 @@ export default function CheckoutPage() {
           }
         },
         prefill: {
-          name: user.displayName || "",
+          name: customerName || user.displayName || "",
           email: user.email || "",
-          contact: profile?.phoneNumber || user?.phoneNumber || "",
+          contact: customerPhone || user.phoneNumber || "",
         },
         theme: {
           color: "#EAB308",
@@ -251,48 +280,72 @@ export default function CheckoutPage() {
                   )}
 
                   {step === 2 && (
-                    <div className="space-y-4">
+                    <div className="space-y-6">
                       <h3 className="text-xl font-bold flex items-center gap-2">
                         <MapPin className="w-5 h-5 text-primary" />
-                        Delivery Address
+                        Delivery Details
                       </h3>
-                      <div className="bg-primary/5 border-2 border-primary rounded-3xl p-6 relative">
-                        <div className="absolute top-4 right-4 text-primary">
-                          <CheckCircle2 className="w-6 h-6 fill-current bg-black rounded-full" />
-                        </div>
-                        <div className="flex gap-4">
-                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                            <MapPin className="w-5 h-5 text-primary" />
+                      
+                      <div className="space-y-4 bg-secondary/20 border border-white/5 p-6 rounded-[28px]">
+                        {/* Name Field */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-muted tracking-widest uppercase ml-1">Full Name</label>
+                          <div className="relative">
+                            <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                            <input
+                              type="text"
+                              value={customerName}
+                              onChange={(e) => setCustomerName(e.target.value)}
+                              placeholder="Enter your full name"
+                              className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-primary/50 transition-all text-white placeholder:text-white/20"
+                              required
+                            />
                           </div>
-                          <div className="flex-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <h4 className="font-bold text-lg">Saved Address</h4>
-                              <Link 
-                                href="/profile" 
-                                className="text-[10px] font-black uppercase tracking-widest text-primary hover:underline underline-offset-4"
-                              >
-                                Change
-                              </Link>
-                            </div>
-                            <p className="text-sm text-muted leading-relaxed">
-                              {profile?.address || (
-                                <span className="text-red-400">Please add an address in your profile settings.</span>
-                              )}
-                            </p>
+                        </div>
+
+                        {/* Phone Field */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-muted tracking-widest uppercase ml-1">Phone Number</label>
+                          <div className="relative">
+                            <Smartphone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                            <input
+                              type="tel"
+                              value={customerPhone}
+                              onChange={(e) => setCustomerPhone(e.target.value)}
+                              placeholder="10-digit mobile number"
+                              className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-primary/50 transition-all text-white placeholder:text-white/20"
+                              required
+                            />
+                          </div>
+                        </div>
+
+                        {/* Address Field */}
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-black text-muted tracking-widest uppercase ml-1">Delivery Address</label>
+                          <div className="relative">
+                            <MapPin className="absolute left-4 top-4 w-4 h-4 text-muted" />
+                            <textarea
+                              value={deliveryAddress}
+                              onChange={(e) => setDeliveryAddress(e.target.value)}
+                              placeholder="House/Flat No., Street, Landmark..."
+                              className="w-full pl-12 pr-4 py-4 h-24 bg-white/5 border border-white/10 rounded-2xl outline-none focus:border-primary/50 transition-all text-white placeholder:text-white/20 resize-none"
+                              required
+                            />
                           </div>
                         </div>
                       </div>
+
                       <button 
-                        disabled={!profile?.address}
+                        disabled={!customerName.trim() || !customerPhone.trim() || !deliveryAddress.trim()}
                         onClick={() => setStep(3)}
                         className={cn(
                           "w-full py-4 font-bold rounded-2xl flex items-center justify-center gap-2 transition-all shadow-glow",
-                          profile?.address 
+                          (customerName.trim() && customerPhone.trim() && deliveryAddress.trim())
                             ? "bg-primary text-black hover:scale-[1.02]" 
                             : "bg-white/5 border border-white/10 text-muted cursor-not-allowed"
                         )}
                       >
-                        {profile?.address ? "Proceed to Payment" : "Add Address to Continue"}
+                        Proceed to Payment
                         <ChevronRight className="w-4 h-4" />
                       </button>
                     </div>
@@ -419,7 +472,7 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">Delivering to</p>
-                    <p className="text-sm font-bold truncate">{profile?.address || "No address saved"}</p>
+                    <p className="text-sm font-bold truncate">{deliveryAddress || "No address entered"}</p>
                     <p className="text-[10px] text-muted mt-0.5">ESTIMATED DELIVERY: 25 MINS</p>
                   </div>
                 </div>
