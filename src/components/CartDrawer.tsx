@@ -2,7 +2,7 @@
 
 import React from "react";
 import { m, AnimatePresence } from "framer-motion";
-import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight, MapPin, MessageCircle, DollarSign, Phone } from "lucide-react";
+import { X, ShoppingBag, Plus, Minus, Trash2, ArrowRight, MapPin, MessageCircle, DollarSign, Phone, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useAuth } from "@/context/AuthContext";
 import { createOrder } from "@/lib/firestore";
@@ -23,12 +23,16 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
   const [isCheckingOut, setIsCheckingOut] = React.useState(false);
   const [address, setAddress] = React.useState("");
   const [phoneNumber, setPhoneNumber] = React.useState("");
+  const [customerName, setCustomerName] = React.useState("");
   const [paymentMethod, setPaymentMethod] = React.useState<"online" | "cod">("cod");
   const [isPlacing, setIsPlacing] = React.useState(false);
 
   React.useEffect(() => {
     if (user?.phoneNumber) {
       setPhoneNumber(user.phoneNumber);
+    }
+    if (user?.displayName) {
+      setCustomerName(user.displayName);
     }
   }, [user]);
 
@@ -40,8 +44,8 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
       return;
     }
 
-    if (!address.trim() || !phoneNumber.trim()) {
-      alert("Please provide both delivery address and mobile number.");
+    if (!customerName.trim() || !address.trim() || !phoneNumber.trim()) {
+      alert("Please provide name, delivery address and mobile number.");
       return;
     }
 
@@ -80,6 +84,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
             if (verifyData.status === "ok") {
               const orderId = await createOrder({
                 userId: user.uid,
+                userName: customerName,
                 vendorId: items[0].vendorId,
                 items: items,
                 total: cartTotal,
@@ -96,7 +101,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               alert("Payment verification failed!");
             }
           },
-          prefill: { contact: phoneNumber || user.phoneNumber || "", email: user.email || "" },
+          prefill: { contact: phoneNumber || user.phoneNumber || "", email: user.email || "", name: customerName || user.displayName || "" },
           theme: { color: "#E2B171" },
         };
 
@@ -106,6 +111,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         // Cash on Delivery / Direct Order Flow
         const orderId = await createOrder({
           userId: user.uid,
+          userName: customerName,
           vendorId: items[0].vendorId,
           items: items,
           total: cartTotal,
@@ -131,7 +137,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
     
     const vendorPhone = "919876543210"; // Placeholder for vendor's WhatsApp
     const itemList = items.map(item => `• ${item.name} (x${item.quantity}) - ₹${item.price * item.quantity}`).join('\n');
-    const message = `*New Order from LunchNow!*%0A%0A*Items:*%0A${itemList}%0A%0A*Total:* ₹${cartTotal}%0A%0A*Address:* ${address || 'Address not provided'}%0A%0A*Customer Phone:* ${phoneNumber || user?.phoneNumber || 'Not provided'}`;
+    const message = `*New Order from LunchNow!*%0A%0A*Items:*%0A${itemList}%0A%0A*Total:* ₹${cartTotal}%0A%0A*Address:* ${address || 'Address not provided'}%0A%0A*Customer Name:* ${customerName || user?.displayName || 'Not provided'}%0A%0A*Customer Phone:* ${phoneNumber || user?.phoneNumber || 'Not provided'}`;
     
     window.open(`https://wa.me/${vendorPhone}?text=${message}`, "_blank");
   };
@@ -256,6 +262,20 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
                     <div className="space-y-4">
                       <div className="flex items-center gap-2 text-primary">
+                        <User className="w-4 h-4" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Full Name</span>
+                      </div>
+                      <input 
+                        type="text"
+                        placeholder="Enter your full name"
+                        className="w-full bg-secondary border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-primary transition-colors"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2 text-primary">
                         <Phone className="w-4 h-4" />
                         <span className="text-xs font-bold uppercase tracking-widest">Mobile Number</span>
                       </div>
@@ -306,7 +326,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                 ) : (
                   <button 
                     onClick={handleCheckout}
-                    disabled={isPlacing || (isCheckingOut && (!address.trim() || !phoneNumber.trim()))}
+                    disabled={isPlacing || (isCheckingOut && (!customerName.trim() || !address.trim() || !phoneNumber.trim()))}
                     className="w-full py-4 bg-primary text-white rounded-2xl font-bold flex items-center justify-center gap-2 group shadow-glow hover:bg-primary-dark transition-all disabled:opacity-50 disabled:grayscale"
                   >
                     {isPlacing ? (
