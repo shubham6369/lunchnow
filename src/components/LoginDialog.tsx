@@ -13,12 +13,6 @@ import {
   Mail,
   Lock
 } from "lucide-react";
-import { 
-  RecaptchaVerifier, 
-  signInWithPhoneNumber, 
-  ConfirmationResult 
-} from "firebase/auth";
-import { auth } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -53,7 +47,14 @@ const GoogleIcon = () => (
 );
 
 export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
-  const { signInWithGoogle, profile } = useAuth();
+  const { 
+    signInWithGoogle, 
+    profile, 
+    signInWithEmail, 
+    signUpWithEmail, 
+    sendPasswordReset, 
+    signInWithCustomSMS 
+  } = useAuth();
   const router = useRouter();
 
   const [step, setStep] = useState<Step>("choose");
@@ -65,8 +66,6 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
-  const { signInWithEmail, signUpWithEmail, sendPasswordReset } = useAuth();
 
   useEffect(() => {
     if (!isOpen) {
@@ -79,16 +78,6 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
         setError(null);
         setLoading(false);
         setGoogleLoading(false);
-        
-        // Clear recaptcha verifier when closed
-        if ((window as any).recaptchaVerifier) {
-          try {
-            (window as any).recaptchaVerifier.clear();
-            (window as any).recaptchaVerifier = null;
-          } catch (e) {
-            console.error("Error clearing recaptcha", e);
-          }
-        }
       }, 300);
     }
   }, [isOpen]);
@@ -126,28 +115,32 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
   };
 
   // ── Phone OTP ───────────────────────────────────────────
-  const setupRecaptcha = () => {
-    if ((window as any).recaptchaVerifier) {
-      try { (window as any).recaptchaVerifier.clear(); } catch {}
-    }
-    (window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-      size: "invisible",
-    });
-  };
-
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!phoneNumber) return;
     setLoading(true);
     setError(null);
     try {
-      // Store intended role for new user registration
-      sessionStorage.setItem('intended_role', intendedRole);
-      
-      setupRecaptcha();
       const formatted = phoneNumber.startsWith("+") ? phoneNumber : `+91${phoneNumber}`;
-      const result = await signInWithPhoneNumber(auth, formatted, (window as any).recaptchaVerifier);
-      setConfirmationResult(result);
+      const response = await fetch("/api/auth/send-sms-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phoneNumber: formatted }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send OTP. Please try again.");
+      }
+
+      // Dev-mode fallback
+      if (data.devMode && data.otpCode) {
+        console.log(`[DEV MODE] OTP Code received on client: ${data.otpCode}`);
+        setOtp(data.otpCode);
+      }
+
       setStep("otp");
     } catch (err: any) {
       console.error(err);
@@ -159,14 +152,29 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!otp || !confirmationResult) return;
+    if (!otp) return;
     setLoading(true);
     setError(null);
     try {
-      await confirmationResult.confirm(otp);
+      const formatted = phoneNumber.startsWith("+") ? phoneNumber : `+91${phoneNumber}`;
+      const response = await fetch("/api/auth/verify-sms-otp", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ phoneNumber: formatted, otp }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || "Invalid OTP code. Please check and try again.");
+      }
+
+      await signInWithCustomSMS(data.customToken, intendedRole);
       setStep("success");
     } catch (err: any) {
-      setError("Invalid OTP code. Please check and try again.");
+      console.error(err);
+      setError(err.message || "Invalid OTP code. Please check and try again.");
     } finally {
       setLoading(false);
     }
@@ -234,8 +242,6 @@ export default function LoginDialog({ isOpen, onClose }: LoginDialogProps) {
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#111] z-110 rounded-[40px] border border-white/8 shadow-2xl overflow-hidden"
           >
-            <div id="recaptcha-container" />
-
             <div className="p-8">
               {/* Header */}
               <div className="flex justify-between items-center mb-8">

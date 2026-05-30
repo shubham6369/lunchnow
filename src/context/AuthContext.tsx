@@ -10,6 +10,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
+  signInWithCustomToken,
 } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
@@ -35,6 +36,7 @@ interface AuthContextType {
   signInWithEmail: (email: string, password: string) => Promise<void>;
   signUpWithEmail: (email: string, password: string, role?: UserProfile['role']) => Promise<void>;
   sendPasswordReset: (email: string) => Promise<void>;
+  signInWithCustomSMS: (token: string, role?: UserProfile['role']) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -108,6 +110,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await sendPasswordResetEmail(auth, email);
   };
 
+  const signInWithCustomSMS = async (token: string, role: UserProfile['role'] = "customer") => {
+    sessionStorage.setItem('intended_role', role);
+    await signInWithCustomToken(auth, token);
+  };
+
   const logout = async () => {
     await signOut(auth);
   };
@@ -122,7 +129,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signInWithGoogle,
       signInWithEmail,
       signUpWithEmail,
-      sendPasswordReset
+      sendPasswordReset,
+      signInWithCustomSMS
     }}>
       {children}
     </AuthContext.Provider>
