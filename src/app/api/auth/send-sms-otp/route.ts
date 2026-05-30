@@ -59,20 +59,30 @@ export async function POST(request: Request) {
 
     // 4. Send SMS via Fast2SMS
     const fast2smsApiKey = process.env.FAST2SMS_API_KEY;
+    const isDev = process.env.NODE_ENV === "development";
 
     if (!fast2smsApiKey || fast2smsApiKey === "placeholder") {
-      // Development Fallback: If no API key is configured, log to console
-      console.log(`\n--- [DEVELOPMENT OTP BYPASS] ---`);
-      console.log(`Phone: +91${cleanedPhone}`);
-      console.log(`OTP Code: ${otp}`);
-      console.log(`---------------------------------\n`);
+      if (isDev) {
+        // Development Fallback: If no API key is configured, log to console
+        console.log(`\n--- [DEVELOPMENT OTP BYPASS] ---`);
+        console.log(`Phone: +91${cleanedPhone}`);
+        console.log(`OTP Code: ${otp}`);
+        console.log(`---------------------------------\n`);
 
-      return NextResponse.json({
-        success: true,
-        message: "[DEV MODE] OTP generated and logged to server console.",
-        devMode: true,
-        otpCode: otp, // Send OTP to client ONLY during development if API key isn't set up
-      });
+        return NextResponse.json({
+          success: true,
+          message: "[DEV MODE] OTP generated and logged to server console.",
+          devMode: true,
+          otpCode: otp, // Send OTP to client ONLY during development if API key isn't set up
+        });
+      } else {
+        // Production: Fail securely if API key is missing
+        console.error("FAST2SMS_API_KEY is not configured in the production environment.");
+        return NextResponse.json(
+          { error: "SMS service is currently unavailable. Please try again later." },
+          { status: 500 }
+        );
+      }
     }
 
     // Real SMS delivery

@@ -24,6 +24,11 @@ service cloud.firestore {
       allow write: if isOwner(userId) || isAdmin();
     }
 
+    // OTPs Collection (Backend only, block all client access)
+    match /otps/{phone} {
+      allow read, write: if false;
+    }
+
     // Vendors Collection
     match /vendors/{vendorId} {
       // Anyone can read active vendors
