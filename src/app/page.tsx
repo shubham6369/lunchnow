@@ -13,7 +13,11 @@ import {
   MessageCircle,
   Search,
   Utensils,
-  ChefHat
+  ChefHat,
+  MapPin,
+  Rocket,
+  Pizza,
+  Triangle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
@@ -217,54 +221,85 @@ export default function HomePage() {
         
         <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <m.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }}>
-            <div className="flex flex-wrap items-center gap-4 animate-fade-in mb-6">
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-bold uppercase tracking-wider">
-                <Star className="w-3 h-3 fill-current" />
-                Trusted by {totalUsers > 0 ? totalUsers.toLocaleString() : "..."}+ Daily Users
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-bold uppercase tracking-wider">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                {totalOrders > 0 ? totalOrders.toLocaleString() : "..."}+ Orders Served
-              </div>
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs font-bold uppercase tracking-wider text-white mb-6">
+              <span className="text-primary font-black">PROUDLY</span> MARIYAHU KA APNA RESTAURANT
             </div>
-            <h1 className="text-6xl md:text-7xl font-bold leading-tight mb-8">
-              Ghar Jaisa <br />
-              <span className="text-gradient">Khana</span>, Everyday.
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-[1.05] tracking-tight uppercase mb-6 text-white">
+              MARIYAHU <br />
+              <span className="text-primary block">KA APNA TASTE</span>
             </h1>
-            <p className="text-lg text-muted max-w-lg mb-10 leading-relaxed">
-              Experience the warmth of home-cooked meals delivered from local kitchens. 
-              Authentic taste, healthy ingredients, and zero compromises.
-            </p>
+            <div className="inline-block bg-primary text-white text-xs md:text-sm font-extrabold px-5 py-2.5 rounded-md uppercase tracking-wider mb-8">
+              ALL TYPE FAST FOOD, DELIVERED FAST
+            </div>
             
-            <div className="flex flex-wrap gap-4 mb-12">
-              <Link href="/vendors" className="px-8 py-4 bg-primary hover:bg-primary-dark rounded-2xl font-bold flex items-center gap-2 transition-all group">
-                Order Now
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <button className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl font-bold flex items-center gap-2 transition-all">
-                <MessageCircle className="w-5 h-5 text-[#25D366]" />
-                Order on WhatsApp
-              </button>
+            {/* Food items bar */}
+            <div className="flex flex-wrap gap-2.5 mb-10">
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/90 uppercase">
+                <Triangle className="w-3 h-3 text-primary fill-primary" /> SAMOSA
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/90 uppercase">
+                <Pizza className="w-3 h-3 text-primary" /> PIZZA
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/90 uppercase">
+                <Utensils className="w-3 h-3 text-primary" /> BURGER
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/90 uppercase">
+                <Utensils className="w-3 h-3 text-primary" /> MOMOS
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-orange-400 uppercase">
+                & MANY MORE!
+              </span>
             </div>
 
-            <div className="flex items-center gap-8 border-t border-white/5 pt-8">
+            <div className="grid grid-cols-3 gap-4 border-t border-b border-white/10 py-6 mb-10">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
-                  <Clock className="w-6 h-6 text-primary" />
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Rocket className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <div className="font-bold text-white">Fast Delivery</div>
-                  <div className="text-xs text-muted">In 20-30 mins</div>
+                  <div className="font-extrabold text-xs text-white uppercase tracking-wider">Fast Delivery</div>
+                  <div className="text-[10px] text-muted">AT YOUR DOORSTEP</div>
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-secondary flex items-center justify-center">
-                  <ShieldCheck className="w-6 h-6 text-primary" />
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <ShieldCheck className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <div className="font-bold text-white">Hygiene First</div>
-                  <div className="text-xs text-muted">Verified Kitchens</div>
+                  <div className="font-extrabold text-xs text-white uppercase tracking-wider">Hygienic Food</div>
+                  <div className="text-[10px] text-muted">SAFE & FRESH</div>
                 </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <ChefHat className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <div className="font-extrabold text-xs text-white uppercase tracking-wider">Verified Kitchens</div>
+                  <div className="text-[10px] text-muted">TRUSTED BY LOCALS</div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-4 mb-8">
+              <Link href="/vendors" className="px-8 py-3 bg-primary hover:bg-primary-dark rounded-full font-black flex flex-col items-center justify-center leading-tight transition-all shadow-[0_8px_25px_rgba(255,87,34,0.3)] hover:shadow-[0_12px_30px_rgba(255,87,34,0.5)] group">
+                <span className="text-white text-base">ORDER NOW</span>
+                <span className="text-[9px] text-white/80 font-bold uppercase">ON LUNCHNOW</span>
+              </Link>
+              <a href="https://wa.me/911234567890" target="_blank" className="px-8 py-3.5 bg-transparent border-2 border-[#25D366] hover:bg-[#25D366]/5 rounded-full font-black flex items-center justify-center gap-2.5 text-white transition-all">
+                <MessageCircle className="w-5 h-5 text-[#25D366] fill-[#25D366]/10" />
+                <div className="text-left leading-tight">
+                  <div className="text-sm font-black">ORDER ON WHATSAPP</div>
+                  <div className="text-[9px] text-[#25D366] font-bold">QUICK & EASY</div>
+                </div>
+              </a>
+            </div>
+
+            <div className="flex items-center gap-3 bg-white/5 border border-white/10 p-4 rounded-xl max-w-md">
+              <MapPin className="w-6 h-6 text-primary flex-shrink-0" />
+              <div>
+                <div className="font-extrabold text-xs text-white uppercase tracking-wider">DELIVERING ALL OVER MARIYAHU</div>
+                <div className="text-[10px] text-muted">YOUR CITY, YOUR FOOD</div>
               </div>
             </div>
           </m.div>
@@ -278,7 +313,7 @@ export default function HomePage() {
             <div className="relative z-10 rounded-[40px] overflow-hidden border border-white/10 shadow-premium aspect-square bg-secondary/50">
               <Image 
                 src="/images/hero.png" 
-                alt="Delicious Indian Lunch Thali" 
+                alt="Mariyahu Ka Apna Taste Food Showcase" 
                 width={800} 
                 height={800}
                 className="w-full h-full object-cover"
@@ -288,35 +323,14 @@ export default function HomePage() {
             </div>
             
             <m.div 
-              animate={{ y: [0, -15, 0] }}
-              transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -top-6 -right-6 glass p-6 rounded-3xl shadow-premium z-20 border border-white/10"
+              animate={{ y: [0, -8, 0] }}
+              transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+              className="absolute -bottom-6 -left-6 w-32 h-32 rounded-full bg-[#0c0c0c] border-[3px] border-double border-primary flex flex-col items-center justify-center text-center p-2 shadow-2xl z-20"
             >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center">
-                  <Star className="text-primary w-6 h-6 fill-current" />
-                </div>
-                <div>
-                  <div className="text-2xl font-bold">4.9/5</div>
-                  <div className="text-xs text-muted">Average Rating</div>
-                </div>
-              </div>
-            </m.div>
-
-            <m.div 
-              animate={{ y: [0, 15, 0] }}
-              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-              className="absolute -bottom-6 -left-6 glass-morphism p-6 rounded-3xl shadow-premium z-20"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#25D366]/20 rounded-2xl flex items-center justify-center">
-                  <MessageCircle className="text-[#25D366] w-6 h-6 fill-current" />
-                </div>
-                <div>
-                  <div className="font-bold">Fast Support</div>
-                  <div className="text-xs text-muted">via WhatsApp</div>
-                </div>
-              </div>
+              <span className="text-[8px] font-bold text-white/70 tracking-wider">LOCAL CHEFS</span>
+              <span className="text-xs font-black text-primary my-0.5">BEST TASTE</span>
+              <span className="text-[7px] font-bold text-white/50">HYGIENIC & SAFE</span>
+              <div className="text-[7px] text-[#ffbc00] mt-0.5 font-bold">★★★★★</div>
             </m.div>
           </m.div>
         </div>
