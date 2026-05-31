@@ -371,13 +371,22 @@ export default function AdminDashboard() {
               <div className="text-sm">
                 <p className="font-bold">Firestore Permission Denied</p>
                 <p className="opacity-80">
-                  {profile?.role !== 'admin' && isMasterAuthenticated
+                  {!user
+                    ? "You are logged in via Master Password, but not signed in to any Firebase account. Please sign in first so we can promote your account to Admin."
+                    : profile?.role !== 'admin' && isMasterAuthenticated
                     ? "Your database user account does not have the 'admin' role, so Firestore is blocking the orders query."
                     : "Some data could not be loaded. Please update your Firestore Security Rules in the Firebase Console."}
                 </p>
               </div>
             </div>
-            {profile?.role !== 'admin' && isMasterAuthenticated && user && (
+            {!user && isMasterAuthenticated ? (
+              <button
+                onClick={() => router.push("/")}
+                className="px-6 py-2.5 bg-primary text-black rounded-xl text-xs font-black uppercase tracking-wider hover:bg-primary/80 transition-all cursor-pointer shrink-0"
+              >
+                Go to Home to Sign In
+              </button>
+            ) : profile?.role !== 'admin' && isMasterAuthenticated && user ? (
               <button
                 onClick={async () => {
                   try {
@@ -390,11 +399,11 @@ export default function AdminDashboard() {
                     toast.error("Failed to update database role.");
                   }
                 }}
-                className="px-6 py-2.5 bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-600 transition-all cursor-pointer"
+                className="px-6 py-2.5 bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-600 transition-all cursor-pointer shrink-0"
               >
                 Promote my Account to Admin
               </button>
-            )}
+            ) : null}
           </div>
         )}
         <div className="flex flex-col lg:flex-row gap-8">
