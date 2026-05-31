@@ -572,6 +572,157 @@ export default function AdminDashboard() {
               </m.div>
             )}
 
+            {activeTab === "live_orders" && (
+              <m.div 
+                key="live_orders"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="space-y-8"
+              >
+                {/* Header */}
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <h1 className="text-4xl font-bold tracking-tight text-white mb-2">Live Order Monitor</h1>
+                    <p className="text-muted text-sm font-bold uppercase tracking-widest">Real-time active order tracking and management</p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="px-4 py-2 bg-secondary/40 border border-white/5 rounded-2xl flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-black uppercase tracking-widest text-white">Live Syncing</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Status Counters */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {["pending", "accepted", "preparing", "out_for_delivery"].map((status) => {
+                    const count = activeOrdersList.filter(o => o.status === status).length;
+                    const label = status === "out_for_delivery" ? "Out for Delivery" : status.toUpperCase();
+                    const color = 
+                      status === "pending" ? "text-amber-500" :
+                      status === "accepted" ? "text-blue-500" :
+                      status === "preparing" ? "text-purple-500" :
+                      "text-orange-500";
+                    return (
+                      <div key={status} className="bg-secondary/20 border border-white/5 p-6 rounded-[24px] text-center shadow-xl">
+                        <span className={`text-2xl font-black ${color}`}>{count}</span>
+                        <p className="text-[9px] text-muted font-bold mt-1 uppercase tracking-wider">{label}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Orders List / Cards Grid */}
+                {activeOrdersList.length === 0 ? (
+                  <div className="bg-secondary/20 border border-white/5 rounded-[40px] py-20 text-center shadow-2xl">
+                    <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <ShoppingBag className="w-10 h-10 text-muted" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white">No active orders right now</h3>
+                    <p className="text-muted text-sm mt-2">All placed orders have been successfully delivered or cancelled.</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {activeOrdersList.map((order) => {
+                      const statusColor = 
+                        order.status === "pending" ? "border-amber-500/30 hover:border-amber-500/50 shadow-amber-500/5" :
+                        order.status === "accepted" ? "border-blue-500/30 hover:border-blue-500/50 shadow-blue-500/5" :
+                        order.status === "preparing" ? "border-purple-500/30 hover:border-purple-500/50 shadow-purple-500/5" :
+                        "border-orange-500/30 hover:border-orange-500/50 shadow-orange-500/5";
+
+                      return (
+                        <m.div
+                          key={order.id}
+                          layout
+                          className={cn(
+                            "bg-secondary/20 border p-6 rounded-[36px] flex flex-col justify-between shadow-2xl transition-all group",
+                            statusColor
+                          )}
+                        >
+                          <div className="space-y-6">
+                            {/* Card Header */}
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <span className="font-mono text-xs font-bold text-white/55">#{order.id.slice(-8).toUpperCase()}</span>
+                                <h3 className="font-bold text-lg text-white mt-1">₹{order.total}</h3>
+                              </div>
+                              <select 
+                                value={order.status || 'pending'}
+                                onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
+                                className={cn(
+                                  "px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-wider outline-none bg-[#111] border cursor-pointer",
+                                  order.status === 'pending' ? 'text-amber-500 border-amber-500/30' : 
+                                  order.status === 'accepted' ? 'text-blue-500 border-blue-500/30' :
+                                  order.status === 'preparing' ? 'text-purple-500 border-purple-500/30' :
+                                  'text-orange-500 border-orange-500/30'
+                                )}
+                              >
+                                <option value="pending">Pending</option>
+                                <option value="accepted">Accepted</option>
+                                <option value="preparing">Preparing</option>
+                                <option value="out_for_delivery">Out for Delivery</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="rejected">Rejected</option>
+                              </select>
+                            </div>
+
+                            {/* Order Items */}
+                            <div className="bg-background/40 border border-white/5 rounded-2xl p-4 space-y-2">
+                              <p className="text-[9px] text-muted font-bold uppercase tracking-widest">Ordered Items</p>
+                              <div className="divide-y divide-white/5">
+                                {order.items?.map((item: any, idx: number) => (
+                                  <div key={idx} className="py-2 flex justify-between text-xs">
+                                    <span className="text-white font-medium">
+                                      {item.name} <span className="text-muted font-bold ml-1">x{item.quantity}</span>
+                                    </span>
+                                    <span className="text-muted">₹{item.price * item.quantity}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Customer & Kitchen Details */}
+                            <div className="grid grid-cols-2 gap-4 text-xs">
+                              <div className="space-y-1">
+                                <p className="text-[9px] text-muted font-bold uppercase tracking-widest">Customer Details</p>
+                                <p className="font-bold text-white">{order.userName || "Guest"}</p>
+                                <p className="text-muted">{order.phoneNumber || "No phone"}</p>
+                                <p className="text-muted text-[10px] line-clamp-2 leading-relaxed">{order.address || "No address"}</p>
+                              </div>
+                              <div className="space-y-1 border-l border-white/5 pl-4">
+                                <p className="text-[9px] text-muted font-bold uppercase tracking-widest">Kitchen Details</p>
+                                <p className="font-bold text-white">{order.vendorName || "Unknown Kitchen"}</p>
+                                <p className="text-muted text-[10px] line-clamp-2 leading-relaxed">
+                                  {vendorsList.find(v => v.id === order.vendorId)?.location || "Location not found"}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-6 mt-6 border-t border-white/5 flex items-center justify-between">
+                            <span className="text-[9px] text-muted font-bold uppercase tracking-wider flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              {order.createdAt?.seconds 
+                                ? new Date(order.createdAt.seconds * 1000).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) 
+                                : "Historical"}
+                            </span>
+                            <button
+                              onClick={() => router.push(`/orders/${order.id}`)}
+                              className="px-4 py-2 bg-white/5 hover:bg-primary hover:text-black text-white text-[10px] font-black uppercase tracking-widest rounded-xl transition-all flex items-center gap-2"
+                            >
+                              Open Tracker <ExternalLink className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </m.div>
+                      );
+                    })}
+                  </div>
+                )}
+              </m.div>
+            )}
+
             {activeTab === "users" && (
               <m.div 
                 key="users"

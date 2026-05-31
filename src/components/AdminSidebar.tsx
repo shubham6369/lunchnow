@@ -11,7 +11,8 @@ import {
   Settings,
   ShieldCheck,
   ChevronRight,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Activity
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { m } from "framer-motion";
@@ -24,6 +25,7 @@ interface AdminSidebarProps {
 export default function AdminSidebar({ activeTab, setActiveTab }: AdminSidebarProps) {
   const menuItems = [
     { id: "overview", label: "Overview", icon: LayoutDashboard },
+    { id: "live_orders", label: "Live Orders", icon: Activity },
     { id: "users", label: "User Management", icon: Users },
     { id: "vendors", label: "Kitchen Partners", icon: Store },
     { id: "dishes", label: "Global Dishes", icon: UtensilsCrossed },
