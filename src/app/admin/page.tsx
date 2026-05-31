@@ -365,12 +365,36 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-background pb-12 px-4 lg:px-6">
       <div className="relative z-30 max-w-[1600px] mx-auto px-4 lg:px-8 pt-36 lg:pt-24 pb-20">
         {hasPermissionError && (
-          <div className="mb-8 p-4 bg-red-500/10 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-500">
-            <ShieldCheck className="w-6 h-6 shrink-0" />
-            <div className="text-sm">
-              <p className="font-bold">Firestore Permission Denied</p>
-              <p className="opacity-80">Some data could not be loaded. Please update your Firestore Security Rules in the Firebase Console.</p>
+          <div className="mb-8 p-6 bg-red-500/10 border border-red-500/20 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-red-500">
+            <div className="flex items-center gap-4">
+              <ShieldCheck className="w-6 h-6 shrink-0" />
+              <div className="text-sm">
+                <p className="font-bold">Firestore Permission Denied</p>
+                <p className="opacity-80">
+                  {profile?.role !== 'admin' && isMasterAuthenticated
+                    ? "Your database user account does not have the 'admin' role, so Firestore is blocking the orders query."
+                    : "Some data could not be loaded. Please update your Firestore Security Rules in the Firebase Console."}
+                </p>
+              </div>
             </div>
+            {profile?.role !== 'admin' && isMasterAuthenticated && user && (
+              <button
+                onClick={async () => {
+                  try {
+                    const { doc, updateDoc } = await import("firebase/firestore");
+                    await updateDoc(doc(db, "users", user.uid), { role: "admin" });
+                    toast.success("Database account updated to Admin! Reloading...");
+                    setTimeout(() => window.location.reload(), 1500);
+                  } catch (err) {
+                    console.error("Failed to upgrade role:", err);
+                    toast.error("Failed to update database role.");
+                  }
+                }}
+                className="px-6 py-2.5 bg-red-500 text-white rounded-xl text-xs font-black uppercase tracking-wider hover:bg-red-600 transition-all cursor-pointer"
+              >
+                Promote my Account to Admin
+              </button>
+            )}
           </div>
         )}
         <div className="flex flex-col lg:flex-row gap-8">
