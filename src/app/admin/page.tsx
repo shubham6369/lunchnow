@@ -353,9 +353,13 @@ export default function AdminDashboard() {
     );
   }
 
+  const activeOrdersList = allOrders.filter(
+    (o) => o.status !== "delivered" && o.status !== "cancelled" && o.status !== "rejected"
+  );
+
   const cards = [
     { title: "Total Revenue", value: `₹${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, trend: "+12.5%", color: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { title: "Total Orders", value: stats.totalOrders.toString(), icon: ShoppingBag, trend: "+8.2%", color: "text-blue-500", bg: "bg-blue-500/10" },
+    { title: "Active Orders", value: activeOrdersList.length.toString(), icon: ShoppingBag, trend: "Live", color: "text-blue-500", bg: "bg-blue-500/10" },
     { title: "Active Vendors", value: stats.activeVendors.toString(), icon: Store, trend: "+3", color: "text-primary", bg: "bg-primary/10" },
     { title: "Total Foodies", value: stats.totalUsers.toString(), icon: Users, trend: "+156", color: "text-purple-500", bg: "bg-purple-500/10" },
   ];
@@ -467,15 +471,13 @@ export default function AdminDashboard() {
                       </div>
                     </m.div>
                   ))}
-                </div>
-
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-                  {/* Live Revenue Stream */}
+                      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                  {/* Live Active Orders */}
                   <div className="xl:col-span-2 space-y-4">
                     <div className="flex items-center justify-between px-2">
                       <h2 className="text-xl font-bold flex items-center gap-3 text-white">
-                        <Activity className="w-5 h-5 text-primary" />
-                        Live Revenue Stream
+                        <Activity className="w-5 h-5 text-primary animate-pulse" />
+                        Live Active Orders
                       </h2>
                       <button 
                         onClick={() => setActiveTab("orders")}
@@ -489,41 +491,67 @@ export default function AdminDashboard() {
                         <thead>
                           <tr className="border-b border-white/5 text-[10px] font-black uppercase tracking-widest text-muted">
                             <th className="px-8 py-6">Order ID</th>
-                            <th className="px-8 py-6">Status</th>
+                            <th className="px-8 py-6">Customer</th>
+                            <th className="px-8 py-6">Kitchen</th>
                             <th className="px-8 py-6">Amount</th>
+                            <th className="px-8 py-6">Status</th>
                             <th className="px-8 py-6 text-right">Action</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-white/5">
-                          {recentOrders.map((order) => (
-                            <tr key={order.id} className="group hover:bg-white/5 transition-colors">
-                              <td className="px-8 py-6">
-                                <p className="text-xs font-bold font-mono text-white/90">#{order.id.slice(-8).toUpperCase()}</p>
-                              </td>
-                              <td className="px-8 py-6">
-                                <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter", 
-                                  order.status === 'delivered' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-500 border border-amber-500/20'
-                                )}>
-                                  {order.status || 'Pending'}
-                                </span>
-                              </td>
-                              <td className="px-8 py-6">
-                                <span className="text-sm font-black text-white">₹{order.total}</span>
-                              </td>
-                              <td className="px-8 py-6 text-right">
-                                <button 
-                                  onClick={() => router.push(`/orders/${order.id}`)}
-                                  className="p-3 bg-white/5 hover:bg-primary hover:text-black rounded-2xl transition-all group/view"
-                                >
-                                  <ExternalLink className="w-4 h-4 transition-transform" />
-                                </button>
+                          {activeOrdersList.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} className="px-8 py-16 text-center">
+                                <div className="text-sm text-muted font-bold">
+                                  <p>No active orders at the moment</p>
+                                  <p className="opacity-60 text-xs font-normal mt-1">All orders are delivered, cancelled, or settled.</p>
+                                </div>
                               </td>
                             </tr>
-                          ))}
+                          ) : (
+                            activeOrdersList.slice(0, 10).map((order) => (
+                              <tr key={order.id} className="group hover:bg-white/5 transition-colors">
+                                <td className="px-8 py-6">
+                                  <p className="text-xs font-bold font-mono text-white/90">#{order.id.slice(-8).toUpperCase()}</p>
+                                  <p className="text-[9px] text-muted font-bold uppercase tracking-tighter mt-1 flex items-center gap-1">
+                                    <Clock className="w-3 h-3" />
+                                    {order.createdAt?.seconds ? new Date(order.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "--:--"}
+                                  </p>
+                                </td>
+                                <td className="px-8 py-6 text-xs font-bold text-white">
+                                  {order.userName || "Guest"}
+                                </td>
+                                <td className="px-8 py-6 text-xs font-bold text-muted">
+                                  {order.vendorName || "Unknown"}
+                                </td>
+                                <td className="px-8 py-6">
+                                  <span className="text-sm font-black text-white">₹{order.total}</span>
+                                </td>
+                                <td className="px-8 py-6">
+                                  <span className={cn("px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border", 
+                                    order.status === 'pending' ? 'bg-amber-500/10 text-amber-500 border-amber-500/20' : 
+                                    order.status === 'accepted' ? 'bg-blue-500/10 text-blue-500 border-blue-500/20' :
+                                    order.status === 'preparing' ? 'bg-purple-500/10 text-purple-500 border-purple-500/20' :
+                                    'bg-emerald-500/10 text-emerald-500 border-emerald-500/20'
+                                  )}>
+                                    {order.status || 'Pending'}
+                                  </span>
+                                </td>
+                                <td className="px-8 py-6 text-right">
+                                  <button 
+                                    onClick={() => router.push(`/orders/${order.id}`)}
+                                    className="p-3 bg-white/5 hover:bg-primary hover:text-black rounded-2xl transition-all group/view"
+                                  >
+                                    <ExternalLink className="w-4 h-4" />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))
+                          )}
                         </tbody>
                       </table>
                     </div>
-                  </div>
+                  </div>              </div>
 
                   <div className="bg-secondary/20 border border-white/5 rounded-[40px] p-8 space-y-6 shadow-2xl">
                     <h3 className="text-sm font-black uppercase tracking-widest text-muted px-2">Quick Actions</h3>
