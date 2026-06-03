@@ -105,9 +105,9 @@ export default function DishCard({
       ref={cardRef}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -4 }}
-      transition={{ duration: 0.3 }}
-      className="group relative bg-secondary/40 border border-white/5 rounded-[28px] overflow-hidden hover:border-primary/30 transition-all shadow-lg"
+      whileHover={{ y: -6 }}
+      transition={{ type: "spring", stiffness: 350, damping: 20 }}
+      className="group relative bg-[#121214] border border-white/5 rounded-[28px] overflow-hidden hover:border-primary/40 transition-all duration-500 shadow-premium hover:shadow-[0_20px_40px_rgba(255,87,34,0.14)]"
     >
       {/* Image */}
       <Link href={`/vendors/${vendorId}`} className="block">
@@ -115,7 +115,7 @@ export default function DishCard({
           <img
             src={image || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80"}
             alt={name}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+            className="w-full h-full object-cover scale-100 group-hover:scale-108 transition-all duration-700 ease-out opacity-80 group-hover:opacity-100"
           />
           {/* Gradient overlay */}
           <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent" />

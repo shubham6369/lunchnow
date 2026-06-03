@@ -356,9 +356,9 @@ h1, h2, h3, .logo-text {
 }
 
 .menu-card:hover {
-    transform: translateY(-10px);
-    box-shadow: 0 30px 60px rgba(255, 87, 34, 0.08);
-    border-color: rgba(255, 87, 34, 0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(255, 87, 34, 0.14);
+    border-color: rgba(255, 87, 34, 0.2);
 }
 
 .card-img {
