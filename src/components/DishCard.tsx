@@ -67,10 +67,10 @@ export default function DishCard({
       requestAnimationFrame(() => {
         flyEl.style.top = `${targetTop}px`;
         flyEl.style.left = `${targetLeft}px`;
-        flyEl.style.width = "50px";
-        flyEl.style.height = "50px";
-        flyEl.style.opacity = "0.15";
-        flyEl.style.transform = "scale(0.65) rotate(540deg)";
+        flyEl.style.width = "70px";
+        flyEl.style.height = "70px";
+        flyEl.style.opacity = "0.35";
+        flyEl.style.transform = "scale(0.8) rotate(540deg)";
       });
       
       setTimeout(() => {
@@ -85,7 +85,7 @@ export default function DishCard({
         });
         setAdded(true);
         setTimeout(() => setAdded(false), 1500);
-      }, 1300);
+      }, 1800);
     } else {
       addToCart({
         id,

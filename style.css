@@ -1331,11 +1331,11 @@ footer {
     border-radius: 50% !important; /* Circular flying thumbnail */
     will-change: top, left, width, height, transform, opacity;
     transition: 
-        top 1.3s cubic-bezier(0.075, 0.82, 0.165, 1), 
-        left 1.3s cubic-bezier(0.55, 0.055, 0.675, 0.19), 
-        width 1.3s cubic-bezier(0.16, 1, 0.3, 1), 
-        height 1.3s cubic-bezier(0.16, 1, 0.3, 1), 
-        opacity 1.3s ease-in,
-        transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
+        top 1.8s cubic-bezier(0.075, 0.82, 0.165, 1), 
+        left 1.8s cubic-bezier(0.55, 0.055, 0.675, 0.19), 
+        width 1.8s cubic-bezier(0.16, 1, 0.3, 1), 
+        height 1.8s cubic-bezier(0.16, 1, 0.3, 1), 
+        opacity 1.8s ease-in,
+        transform 1.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
