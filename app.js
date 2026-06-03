@@ -114,17 +114,17 @@ const animateFlyToCart = (img, cartBtn, callback) => {
     requestAnimationFrame(() => {
         flyEl.style.top = `${targetTop}px`;
         flyEl.style.left = `${targetLeft}px`;
-        flyEl.style.width = '30px';
-        flyEl.style.height = '30px';
-        flyEl.style.opacity = '0.05';
-        flyEl.style.transform = 'scale(0.1) rotate(540deg)';
+        flyEl.style.width = '50px';
+        flyEl.style.height = '50px';
+        flyEl.style.opacity = '0.15';
+        flyEl.style.transform = 'scale(0.65) rotate(540deg)';
     });
     
     // Clean up elements and execute cart sync callback when animation completes
     setTimeout(() => {
         flyEl.remove();
         callback();
-    }, 800);
+    }, 1300);
 };
 
 const addToCart = (e) => {
