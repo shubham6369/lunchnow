@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LunchNow | Premium Gourmet Lunch Service</title>
+    <meta name="description" content="Experience chef-crafted, premium lunch bowls delivered right to your doorstep. Healthy, fresh, and delicious.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="images/favicon.png" type="image/png">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <span class="logo-text">Lunch<span>Now</span></span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#menu">Menu</a></li>
+                <li><a href="#plans">Plans</a></li>
+                <li><a href="#about">Our Story</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button id="cart-btn" class="icon-btn">
+                    <i data-lucide="shopping-bag"></i>
+                    <span class="cart-count">0</span>
+                </button>
+                <button class="cta-btn secondary">Sign In</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <div class="proud-badge">
+                    <span class="badge-accent">PROUDLY</span> MARIYAHU KA APNA RESTAURANT
+                </div>
+                <h1>MARIYAHU <span>KA APNA TASTE</span></h1>
+                <div class="sub-banner">ALL TYPE FAST FOOD, DELIVERED FAST</div>
+                
+                <div class="food-items-bar">
+                    <span class="food-pill"><i data-lucide="triangle"></i> SAMOSA</span>
+                    <span class="food-pill"><i data-lucide="pizza"></i> PIZZA</span>
+                    <span class="food-pill"><i data-lucide="utensils-crossed"></i> BURGER</span>
+                    <span class="food-pill"><i data-lucide="soup"></i> MOMOS</span>
+                    <span class="food-pill accent">& MANY MORE!</span>
+                </div>
+                
+                <div class="features-row">
+                    <div class="feature-item">
+                        <div class="feature-icon"><i data-lucide="rocket"></i></div>
+                        <div class="feature-info">
+                            <span class="f-title">FAST DELIVERY</span>
+                            <span class="f-sub">AT YOUR DOORSTEP</span>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i data-lucide="shield-check"></i></div>
+                        <div class="feature-info">
+                            <span class="f-title">HYGIENIC FOOD</span>
+                            <span class="f-sub">SAFE & FRESH</span>
+                        </div>
+                    </div>
+                    <div class="feature-item">
+                        <div class="feature-icon"><i data-lucide="award"></i></div>
+                        <div class="feature-info">
+                            <span class="f-title">VERIFIED KITCHENS</span>
+                            <span class="f-sub">TRUSTED BY LOCALS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="hero-btns-new">
+                    <a href="#menu" class="btn-order-now">ORDER NOW<span>ON LUNCHNOW</span></a>
+                    <a href="https://wa.me/911234567890" target="_blank" class="btn-whatsapp">
+                        <i data-lucide="message-circle"></i> ORDER ON WHATSAPP <span style="font-size: 10px; opacity: 0.8; font-weight: 500; margin-left: 5px;">QUICK & EASY</span>
+                    </a>
+                </div>
+                
+                <div class="delivering-bar">
+                    <i data-lucide="map-pin"></i>
+                    <div>
+                        <span class="delivering-title">DELIVERING ALL OVER MARIYAHU</span>
+                        <span class="delivering-sub">YOUR CITY, YOUR FOOD</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="image-wrapper">
+                    <img src="images/hero.png" alt="Mariyahu Ka Apna Taste Food Showcase">
+                    <div class="floating-badge-circle">
+                        <span class="fb-top">LOCAL CHEFS</span>
+                        <span class="fb-middle">BEST TASTE</span>
+                        <span class="fb-bottom">HYGIENIC & SAFE</span>
+                        <div class="fb-stars">★★★★★</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="mouse"></div>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <section id="menu" class="menu">
+        <div class="container">
+            <div class="section-header reveal reveal-up">
+                <h2>Today's <span>Selections</span></h2>
+                <p>Curated by our expert chefs using locally sourced organic ingredients.</p>
+            </div>
+            <div class="menu-grid">
+                <!-- Menu Item 1 -->
+                <article class="menu-card glass reveal reveal-up delay-1">
+                    <div class="card-img">
+                        <img src="images/hero.png" alt="Signature Harvest Bowl">
+                        <span class="category">Best Seller</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="title-row">
+                            <h3>Signature Harvest Bowl</h3>
+                            <span class="price">$14.50</span>
+                        </div>
+                        <p>Quinoa fusion with roasted sweet potato, avocado silk, and pomegranate jewels.</p>
+                        <div class="card-meta">
+                            <span><i data-lucide="flame"></i> 450 kcal</span>
+                            <span><i data-lucide="clock"></i> 15-20 min</span>
+                        </div>
+                        <button class="add-to-cart cta-btn outline" data-id="1" data-name="Harvest Bowl" data-price="14.50">Add to Cart</button>
+                    </div>
+                </article>
+
+                <!-- Menu Item 2 -->
+                <article class="menu-card glass reveal reveal-up delay-2">
+                    <div class="card-img">
+                        <img src="images/pasta.png" alt="Tuscan Pesto Penne">
+                        <span class="category">Chef Choice</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="title-row">
+                            <h3>Tuscan Pesto Penne</h3>
+                            <span class="price">$16.20</span>
+                        </div>
+                        <p>Artisan penne in creamy pine-nut pesto with sun-dried tomatoes and basil.</p>
+                        <div class="card-meta">
+                            <span><i data-lucide="flame"></i> 520 kcal</span>
+                            <span><i data-lucide="clock"></i> 20-25 min</span>
+                        </div>
+                        <button class="add-to-cart cta-btn outline" data-id="2" data-name="Pesto Penne" data-price="16.20">Add to Cart</button>
+                    </div>
+                </article>
+
+                <!-- Menu Item 3 -->
+                <article class="menu-card glass reveal reveal-up delay-3">
+                    <div class="card-img">
+                        <img src="images/salad.png" alt="Aegean Zen Salad">
+                        <span class="category">Healthy</span>
+                    </div>
+                    <div class="card-content">
+                        <div class="title-row">
+                            <h3>Aegean Zen Salad</h3>
+                            <span class="price">$12.80</span>
+                        </div>
+                        <p>Vibrant Greek salad with barrel-aged feta, kalamata olives, and herb vinaigrette.</p>
+                        <div class="card-meta">
+                            <span><i data-lucide="flame"></i> 320 kcal</span>
+                            <span><i data-lucide="clock"></i> 10-15 min</span>
+                        </div>
+                        <button class="add-to-cart cta-btn outline" data-id="3" data-name="Aegean Salad" data-price="12.80">Add to Cart</button>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-drawer" class="cart-drawer">
+        <div class="cart-header">
+            <h3>Your Order</h3>
+            <button id="close-cart" class="close-btn"><i data-lucide="x"></i></button>
+        </div>
+        <div id="cart-items" class="cart-items">
+            <!-- Items will be injected here -->
+            <div class="empty-cart">
+                <i data-lucide="utensils"></i>
+                <p>Your cart is empty.</p>
+                <a href="#menu" class="cta-btn primary">Choose a Meal</a>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="total-row">
+                <span>Total</span>
+                <span id="cart-total">$0.00</span>
+            </div>
+            <button id="checkout-btn" class="cta-btn primary full-width" disabled>Checkout Now</button>
+        </div>
+    </div>
+    <div id="cart-overlay" class="cart-overlay"></div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand reveal reveal-up delay-1">
+                <span class="logo-text">Lunch<span>Now</span></span>
+                <p>Redefining lunchtime for the modern professional.</p>
+                <div class="social-links">
+                    <a href="#"><i data-lucide="instagram"></i></a>
+                    <a href="#"><i data-lucide="twitter"></i></a>
+                    <a href="#"><i data-lucide="facebook"></i></a>
+                </div>
+            </div>
+            <div class="footer-links reveal reveal-up delay-2">
+                <h4>Company</h4>
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Careers</a></li>
+                    <li><a href="#">Blog</a></li>
+                </ul>
+            </div>
+            <div class="footer-links reveal reveal-up delay-3">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Delivery Area</a></li>
+                    <li><a href="#">Contact</a></li>
+                </ul>
+            </div>
+            <div class="footer-newsletter reveal reveal-up delay-4">
+                <h4>Stay Fresh</h4>
+                <p>Get weekly menu updates in your inbox.</p>
+                <form class="newsletter-form">
+                    <input type="email" placeholder="Email address">
+                    <button type="submit"><i data-lucide="send"></i></button>
+                </form>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 LunchNow. Crafted for success.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+</html>
