@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { m } from "framer-motion";
 import { Plus, Check, ShoppingBag } from "lucide-react";
 import { useCart } from "@/context/CartContext";
@@ -32,26 +32,77 @@ export default function DishCard({
 }: DishCardProps) {
   const { addToCart, items } = useCart();
   const [added, setAdded] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const inCart = items.some((i) => i.id === id);
 
   const handleAdd = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!isAvailable) return;
-    addToCart({
-      id,
-      vendorId,
-      vendorName: vendorName || "Kitchen",
-      name,
-      price,
-      image: image || "/images/hero.png",
-    });
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1500);
+
+    // Trigger flight animation
+    const img = cardRef.current?.querySelector("img");
+    const cartBtn = document.getElementById("cart-btn");
+    
+    if (img && cartBtn) {
+      const imgRect = img.getBoundingClientRect();
+      const cartBtnRect = cartBtn.getBoundingClientRect();
+      
+      const flyEl = document.createElement("div");
+      flyEl.className = "fly-to-cart-item";
+      
+      // Set initial positions
+      flyEl.style.top = `${imgRect.top}px`;
+      flyEl.style.left = `${imgRect.left}px`;
+      flyEl.style.width = `${imgRect.width}px`;
+      flyEl.style.height = `${imgRect.height}px`;
+      flyEl.style.backgroundImage = `url(${img.src || img.getAttribute('src')})`;
+      
+      document.body.appendChild(flyEl);
+      
+      // Targets
+      const targetLeft = cartBtnRect.left + cartBtnRect.width / 2 - 15;
+      const targetTop = cartBtnRect.top + cartBtnRect.height / 2 - 15;
+      
+      requestAnimationFrame(() => {
+        flyEl.style.top = `${targetTop}px`;
+        flyEl.style.left = `${targetLeft}px`;
+        flyEl.style.width = "30px";
+        flyEl.style.height = "30px";
+        flyEl.style.opacity = "0.05";
+        flyEl.style.transform = "scale(0.1) rotate(540deg)";
+      });
+      
+      setTimeout(() => {
+        flyEl.remove();
+        addToCart({
+          id,
+          vendorId,
+          vendorName: vendorName || "Kitchen",
+          name,
+          price,
+          image: image || "/images/hero.png",
+        });
+        setAdded(true);
+        setTimeout(() => setAdded(false), 1500);
+      }, 800);
+    } else {
+      addToCart({
+        id,
+        vendorId,
+        vendorName: vendorName || "Kitchen",
+        name,
+        price,
+        image: image || "/images/hero.png",
+      });
+      setAdded(true);
+      setTimeout(() => setAdded(false), 1500);
+    }
   };
 
   return (
     <m.div
+      ref={cardRef}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -4 }}

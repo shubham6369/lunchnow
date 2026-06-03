@@ -64,6 +64,7 @@ export default function Navbar() {
 
             {/* Cart Button */}
             <button 
+              id="cart-btn"
               onClick={() => setIsCartOpen(true)}
               className="p-2.5 hover:bg-white/5 rounded-full transition-colors relative"
             >

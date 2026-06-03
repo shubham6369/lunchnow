@@ -85,6 +85,48 @@ const updateCartUI = () => {
     }
 };
 
+const animateFlyToCart = (img, cartBtn, callback) => {
+    const imgRect = img.getBoundingClientRect();
+    const cartBtnRect = cartBtn.getBoundingClientRect();
+    
+    // Create flying clone element
+    const flyEl = document.createElement('div');
+    flyEl.className = 'fly-to-cart-item';
+    
+    // Setup initial position & dimensions match card image
+    flyEl.style.top = `${imgRect.top + window.scrollY}px`;
+    flyEl.style.left = `${imgRect.left + window.scrollX}px`;
+    flyEl.style.width = `${imgRect.width}px`;
+    flyEl.style.height = `${imgRect.height}px`;
+    flyEl.style.backgroundImage = `url(${img.src})`;
+    
+    // Convert current fixed coordinates to page-relative coordinates for absolute positioning
+    flyEl.style.top = `${imgRect.top}px`;
+    flyEl.style.left = `${imgRect.left}px`;
+    
+    document.body.appendChild(flyEl);
+    
+    // Calculate target coordinates (centered inside target cart button)
+    const targetLeft = cartBtnRect.left + cartBtnRect.width / 2 - 15;
+    const targetTop = cartBtnRect.top + cartBtnRect.height / 2 - 15;
+    
+    // Start animation in the next layout frame
+    requestAnimationFrame(() => {
+        flyEl.style.top = `${targetTop}px`;
+        flyEl.style.left = `${targetLeft}px`;
+        flyEl.style.width = '30px';
+        flyEl.style.height = '30px';
+        flyEl.style.opacity = '0.05';
+        flyEl.style.transform = 'scale(0.1) rotate(540deg)';
+    });
+    
+    // Clean up elements and execute cart sync callback when animation completes
+    setTimeout(() => {
+        flyEl.remove();
+        callback();
+    }, 800);
+};
+
 const addToCart = (e) => {
     const btn = e.target;
     const id = parseInt(btn.dataset.id);
@@ -108,7 +150,18 @@ const addToCart = (e) => {
         btn.classList.remove('success');
     }, 1500);
 
-    updateCartUI();
+    // Trigger fly-to-cart animation if assets exist
+    const card = btn.closest('.menu-card');
+    const img = card ? card.querySelector('.card-img img') : null;
+    const cartBtnEl = document.getElementById('cart-btn');
+
+    if (img && cartBtnEl) {
+        animateFlyToCart(img, cartBtnEl, () => {
+            updateCartUI();
+        });
+    } else {
+        updateCartUI();
+    }
 };
 
 window.removeFromCart = (id) => {
