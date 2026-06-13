@@ -286,7 +286,7 @@ export default function HomePage() {
                 <span className="text-white text-base">ORDER NOW</span>
                 <span className="text-[9px] text-white/80 font-bold uppercase">ON LUNCHNOW</span>
               </Link>
-              <a href="https://wa.me/919278106948" target="_blank" className="px-8 py-3.5 bg-transparent border-2 border-[#25D366] hover:bg-[#25D366]/5 rounded-full font-black flex items-center justify-center gap-2.5 text-white transition-all">
+              <a href="https://wa.me/911234567890" target="_blank" className="px-8 py-3.5 bg-transparent border-2 border-[#25D366] hover:bg-[#25D366]/5 rounded-full font-black flex items-center justify-center gap-2.5 text-white transition-all">
                 <MessageCircle className="w-5 h-5 text-[#25D366] fill-[#25D366]/10" />
                 <div className="text-left leading-tight">
                   <div className="text-sm font-black">ORDER ON WHATSAPP</div>
