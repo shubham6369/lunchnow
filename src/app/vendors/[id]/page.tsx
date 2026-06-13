@@ -371,7 +371,7 @@ export default function VendorDetailPage({ params }: { params: { id: string } })
                 Chat directly with {vendor.name} kitchen for custom requests or bulk orders.
               </p>
               <a 
-                href={`https://wa.me/${vendor.whatsapp || '919999999999'}?text=Hi ${vendor.name}, I have a query about your menu.`}
+                href={`https://wa.me/${vendor.whatsapp || '919278106948'}?text=Hi ${vendor.name}, I have a query about your menu.`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-6 w-full py-3 bg-[#25D366] text-white rounded-xl font-bold text-xs shadow-glow-green flex items-center justify-center gap-2"
