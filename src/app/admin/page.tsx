@@ -20,7 +20,12 @@ import {
   UtensilsCrossed,
   MapPin as MapPinIcon,
   ToggleLeft,
-  ToggleRight
+  ToggleRight,
+  Plus,
+  Edit3,
+  X,
+  Image as ImageIcon,
+  Loader2
 } from "lucide-react";
 import { m, AnimatePresence } from "framer-motion";
 import { collection, onSnapshot, query, orderBy, limit, collectionGroup } from "firebase/firestore";
@@ -56,6 +61,22 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [hasPermissionError, setHasPermissionError] = useState(false);
+
+  const [isAdding, setIsAdding] = useState(false);
+  const [editingDish, setEditingDish] = useState<any>(null);
+  const [saving, setSaving] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    category: "",
+    description: "",
+    isVeg: true,
+    image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80",
+    vendorId: "",
+  });
 
   // Check for master auth on mount
   useEffect(() => {
@@ -259,6 +280,107 @@ export default function AdminDashboard() {
     } catch (error) {
       console.error("Update failed:", error);
       toast.error("Update failed");
+    }
+  };
+
+  const openAddForm = () => {
+    setFormData({ 
+      name: "", 
+      price: "", 
+      category: "", 
+      description: "", 
+      isVeg: true, 
+      image: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80", 
+      vendorId: vendorsList[0]?.id || "" 
+    });
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setEditingDish(null);
+    setIsAdding(true);
+  };
+
+  const openEditForm = (dish: any) => {
+    setFormData({ 
+      name: dish.name, 
+      price: String(dish.price), 
+      category: dish.category, 
+      description: dish.description || "", 
+      isVeg: dish.isVeg !== false, 
+      image: dish.image || "", 
+      vendorId: dish.vendorId || "" 
+    });
+    setEditingDish(dish);
+    setSelectedFile(null);
+    setPreviewUrl(dish.image);
+    setIsAdding(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddEditDish = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.vendorId) {
+      toast.error("Please select a vendor/kitchen partner.");
+      return;
+    }
+    setSaving(true);
+    try {
+      let imageUrl = formData.image;
+
+      // Upload image if a new file is selected
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const storagePath = `dishes/${formData.vendorId}/${fileName}`;
+        const { uploadImage } = await import("@/lib/storage");
+        imageUrl = await uploadImage(selectedFile, storagePath);
+      } else if (!imageUrl && !editingDish) {
+        // Default placeholder if no image and new dish
+        imageUrl = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80";
+      }
+
+      const dishPayload: any = {
+        name: formData.name,
+        price: Number(formData.price),
+        category: formData.category || "General",
+        isVeg: formData.isVeg,
+        isAvailable: editingDish ? editingDish.isAvailable : true,
+        image: imageUrl,
+        description: formData.description,
+      };
+      if (editingDish) {
+        dishPayload.id = editingDish.id;
+      }
+      
+      const { upsertDish } = await import("@/lib/firestore");
+      // If we are editing and the vendor changed, we need to delete from old vendor's subcollection
+      if (editingDish && editingDish.vendorId !== formData.vendorId) {
+        const { deleteDoc, doc } = await import("firebase/firestore");
+        await deleteDoc(doc(db, "vendors", editingDish.vendorId, "dishes", editingDish.id));
+      }
+      
+      const id = await upsertDish(formData.vendorId, dishPayload);
+      
+      toast.success(editingDish ? "Dish updated successfully!" : "Dish added successfully!");
+      setIsAdding(false);
+      setEditingDish(null);
+      setSelectedFile(null);
+      setPreviewUrl(null);
+    } catch (error) {
+      console.error("Error saving dish:", error);
+      toast.error("Error saving dish. Please check if your image is too large or try again.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -1035,17 +1157,25 @@ export default function AdminDashboard() {
                 exit={{ opacity: 0, x: -20 }}
                 className="space-y-6"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <h2 className="text-3xl font-bold text-white">Global Dish Inventory</h2>
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
-                    <input 
-                      type="text" 
-                      placeholder="Search dishes or categories..." 
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-12 pr-6 py-3 bg-secondary/40 border border-white/5 rounded-2xl outline-none focus:border-primary/50 transition-all text-xs w-64 text-white"
-                    />
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted" />
+                      <input 
+                        type="text" 
+                        placeholder="Search dishes or categories..." 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-12 pr-6 py-3 bg-secondary/40 border border-white/5 rounded-2xl outline-none focus:border-primary/50 transition-all text-xs w-64 text-white"
+                      />
+                    </div>
+                    <button 
+                      onClick={openAddForm}
+                      className="flex items-center gap-2 px-6 py-3 bg-primary text-black rounded-2xl font-bold text-xs shadow-glow hover:bg-primary/80 transition-all"
+                    >
+                      <Plus className="w-4 h-4" /> Add Dish
+                    </button>
                   </div>
                 </div>
                 <div className="bg-secondary/20 border border-white/5 rounded-[40px] overflow-hidden shadow-2xl">
@@ -1092,12 +1222,20 @@ export default function AdminDashboard() {
                             </button>
                           </td>
                           <td className="px-8 py-6 text-right">
-                            <button 
-                              onClick={() => handleDeleteDish(dish.vendorId, dish.id)}
-                              className="p-3 hover:bg-red-500/10 rounded-2xl transition-all text-red-500"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                            <div className="flex justify-end items-center gap-2">
+                              <button 
+                                onClick={() => openEditForm(dish)}
+                                className="p-3 hover:bg-white/5 rounded-2xl transition-all text-primary"
+                              >
+                                <Edit3 className="w-4 h-4" />
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteDish(dish.vendorId, dish.id)}
+                                className="p-3 hover:bg-red-500/10 rounded-2xl transition-all text-red-500"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
@@ -1163,6 +1301,171 @@ export default function AdminDashboard() {
                   </table>
                 </div>
               </m.div>
+            )}
+          </AnimatePresence>
+
+          {/* Add/Edit Modal */}
+          <AnimatePresence>
+            {isAdding && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-6">
+                <m.div 
+                  initial={{ opacity: 0 }} 
+                  animate={{ opacity: 1 }} 
+                  exit={{ opacity: 0 }}
+                  onClick={() => setIsAdding(false)}
+                  className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                />
+                <m.div 
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.9, opacity: 0 }}
+                  className="bg-secondary w-full max-w-xl rounded-[40px] border border-white/10 shadow-2xl relative z-60 overflow-hidden"
+                >
+                  <form onSubmit={handleAddEditDish}>
+                    <div className="p-8 border-b border-white/5 flex items-center justify-between">
+                       <h3 className="text-xl font-bold text-white">{editingDish ? "Edit Dish" : "Add New Food Item"}</h3>
+                       <button type="button" onClick={() => setIsAdding(false)} className="p-2 hover:bg-white/5 rounded-full transition-all">
+                         <X className="w-5 h-5 text-white" />
+                       </button>
+                    </div>
+                    <div className="p-8 space-y-6 max-h-[75vh] overflow-y-auto">
+                      {/* Vendor Selection (disabled if editing) */}
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-muted uppercase ml-2">Kitchen Partner</label>
+                        <select 
+                          disabled={!!editingDish}
+                          required
+                          value={formData.vendorId}
+                          onChange={(e) => setFormData({...formData, vendorId: e.target.value})}
+                          className="w-full bg-background border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-primary transition-all text-white disabled:opacity-50"
+                        >
+                          <option value="" disabled>Select a Kitchen Partner</option>
+                          {vendorsList.map(v => (
+                            <option key={v.id} value={v.id}>{v.name} ({v.location || "No Location"})</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-muted uppercase ml-2">Item Name</label>
+                          <input 
+                            required
+                            type="text" 
+                            value={formData.name}
+                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            placeholder="e.g. Deluxe Veg Thali" 
+                            className="w-full bg-background border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-primary transition-all text-white" 
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-[10px] font-bold text-muted uppercase ml-2">Price (₹)</label>
+                          <input 
+                            required
+                            type="number" 
+                            value={formData.price}
+                            onChange={(e) => setFormData({...formData, price: e.target.value})}
+                            placeholder="80" 
+                            className="w-full bg-background border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-primary transition-all text-white" 
+                          />
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-muted uppercase ml-2">Category (Type to Create)</label>
+                        <input 
+                          required
+                          list="categories-list"
+                          type="text" 
+                          value={formData.category}
+                          onChange={(e) => setFormData({...formData, category: e.target.value})}
+                          placeholder="e.g. Daily Thali, Desserts, Starters" 
+                          className="w-full bg-background border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-primary transition-all text-white" 
+                        />
+                        <datalist id="categories-list">
+                          {Array.from(new Set(dishesList.map(d => d.category).filter(Boolean))).map(c => <option key={c} value={c} />)}
+                        </datalist>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-[10px] font-bold text-muted uppercase ml-2">Description (optional)</label>
+                        <textarea
+                          value={formData.description}
+                          onChange={(e) => setFormData({...formData, description: e.target.value})}
+                          placeholder="e.g. Served with salad and papad" 
+                          rows={2}
+                          className="w-full bg-background border border-white/10 rounded-2xl p-4 text-sm focus:outline-none focus:border-primary transition-all text-white resize-none" 
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-6 p-4 bg-white/2 rounded-2xl border border-white/5">
+                        <label className="text-[10px] font-bold text-muted uppercase">Type</label>
+                        <div className="flex gap-4">
+                          <button 
+                            type="button"
+                            onClick={() => setFormData({...formData, isVeg: true})}
+                            className={`px-4 py-2 rounded-xl text-[10px] font-bold transition-all ${formData.isVeg ? 'bg-green-500 text-white' : 'bg-white/5 text-muted'}`}
+                          >
+                            VEG
+                          </button>
+                          <button 
+                            type="button"
+                            onClick={() => setFormData({...formData, isVeg: false})}
+                            className={`px-4 py-2 rounded-xl text-[10px] font-bold transition-all ${!formData.isVeg ? 'bg-red-500 text-white' : 'bg-white/5 text-muted'}`}
+                          >
+                            NON-VEG
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <label className="text-[10px] font-bold text-muted uppercase ml-2">Dish Image</label>
+                        <div className="flex flex-col items-center gap-4 p-6 bg-white/2 rounded-2xl border border-white/5 border-dashed">
+                          {previewUrl ? (
+                            <div className="relative w-32 h-32 rounded-2xl overflow-hidden border border-white/10 shadow-lg">
+                              <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
+                              <button 
+                                type="button"
+                                onClick={() => { setSelectedFile(null); setPreviewUrl(null); }}
+                                className="absolute top-1 right-1 p-1 bg-red-500 rounded-full text-white hover:bg-red-600 transition-colors"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="w-32 h-32 rounded-2xl bg-white/5 flex flex-col items-center justify-center text-muted border border-white/5">
+                              <ImageIcon className="w-8 h-8 mb-2 opacity-20" />
+                              <span className="text-[8px] uppercase tracking-widest opacity-40 font-bold">No Image</span>
+                            </div>
+                          )}
+                          
+                          <div className="w-full">
+                            <label className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl cursor-pointer transition-all text-xs font-bold text-white">
+                              <ImageIcon className="w-4 h-4" />
+                              {selectedFile ? "Change Image" : "Select Dish Photo"}
+                              <input 
+                                type="file" 
+                                accept="image/*" 
+                                onChange={handleFileChange} 
+                                className="hidden" 
+                              />
+                            </label>
+                            <p className="text-[8px] text-muted text-center mt-2 uppercase tracking-tighter">Recommended: 1:1 ratio, max 2MB</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button 
+                        disabled={saving}
+                        type="submit"
+                        className="w-full py-4 bg-primary text-black rounded-2xl font-bold shadow-glow hover:bg-primary/80 transition-all mt-4 flex items-center justify-center gap-2 text-sm uppercase tracking-wider"
+                      >
+                        {saving ? <Loader2 className="animate-spin" /> : (editingDish ? "Save Changes" : "Confirm & Add Item")}
+                      </button>
+                    </div>
+                  </form>
+                </m.div>
+              </div>
             )}
           </AnimatePresence>
         </div>
